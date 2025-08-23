@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Question IA — Gemini</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#ffffff; --accent:#22c55e;
+    --ring:#334155; --btn:#16a34a; --btnText:#ffffff; --highlight:#e67e25; --secondary:#3b82f6;
+  }
+  .light-mode {
+    --bg:#f1f5f9; 
+    --card:#ffffff; 
+    --muted:#64748b; 
+    --text:#000000; 
+    --ring:#e2e8f0;
+    --accent:#16a34a;
+    --secondary:#2563eb;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    background: radial-gradient(1200px 800px at 20% -10%, #1e293b 0%, var(--bg) 40%, #0b1224 100%);
+    color:var(--text); -webkit-font-smoothing:antialiased; line-height:1.5;
+    transition: background 0.3s, color 0.3s;
+  }
+  .header-container {
+    background: linear-gradient(180deg, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.8) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--ring);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 12px 0;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .wrap{max-width:980px;margin:auto;padding:24px}
+  .header-content{display:flex;align-items:center;justify-content:space-between}
+  .logo{display:flex;align-items:center;gap:12px;font-weight:700;font-size:1.2rem}
+  .controls{display:flex;align-items:center;gap:12px}
+  .icon-btn{background:rgba(51,65,85,0.5);border:none;color:var(--text);width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s}
+  .icon-btn:hover{background:var(--ring);transform:scale(1.05)}
+  .lang-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  .lang-dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 40px;
+    background: #111827;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 1000;
+    min-width: 120px;
+    transition: background 0.3s;
+  }
+  .lang-dropdown-content a {
+    color: var(--text);
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+  }
+  .lang-dropdown-content a:hover {
+    background: #334155;
+  }
+  .lang-dropdown.active .lang-dropdown-content {
+    display: block;
+  }
+  .main-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  h1{font-size:clamp(22px,3vw,30px);margin:0;font-weight:700;letter-spacing:.2px}
+  .small{font-size:12px;color:var(--muted)}
+  .card{
+    background:linear-gradient(180deg,#0b1224 0%, var(--card) 100%);
+    border:1px solid var(--ring); border-radius:20px; padding:16px; box-shadow:0 10px 25px rgba(0,0,0,.25);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .grid{display:grid; gap:12px}
+  @media(min-width:720px){ .grid-2{grid-template-columns:1.1fr .9fr} }
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+  input[type="text"], textarea, select, input[type="file"]{
+    width:100%; background:#0b1224; color:var(--text); border:1px solid var(--ring);
+    border-radius:12px; padding:12px 14px; outline:none; transition:.2s;
+  }
+  textarea{min-height:130px; resize:vertical}
+  input:focus, textarea:focus, select:focus{border-color:var(--secondary); box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .row > *{flex:1}
+  .btn{
+    background:linear-gradient(180deg,var(--accent),#16a34a); border:0; color:var(--btnText); padding:12px 16px;
+    border-radius:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:8px;
+    transition:transform .06s ease; box-shadow:0 8px 18px rgba(34,197,94,.25);
+  }
+  .btn:active{transform:translateY(1px)}
+  .ghost{background:transparent; color:var(--text); border:1px dashed var(--ring)}
+  .toolbar{display:flex; gap:8px; flex-wrap:wrap}
+  .out{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; line-height:1.6}
+  .muted{color:var(--muted)}
+  .spinner{width:18px;height:18px;border:3px solid transparent;border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .footer{margin-top:10px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .tip{font-size:12px;color:var(--muted)}
+  .pill{padding:6px 10px;border:1px solid var(--ring);border-radius:999px;cursor:pointer}
+  .right{justify-content:flex-end}
+  .response-footer{
+    margin-top: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding-top: 8px;
+    border-top: 1px solid var(--ring);
+  }
+  .file-input-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .file-input-btn {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border: 1px dashed var(--ring);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #0b1224;
+  }
+  .file-input-btn:hover {
+    border-color: var(--secondary);
+    background: rgba(59, 130, 246, 0.1);
+  }
+  .file-input-btn svg {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 6px;
+  }
+  .file-input-btn span {
+    font-size: 12px;
+    text-align: center;
+  }
+  .file-input-hidden {
+    display: none;
+  }
+  .subject-select {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .subject-category {
+    font-weight: bold;
+    color: var(--accent);
+    padding: 8px 0 4px 0;
+    border-top: 1px solid var(--ring);
+    margin-top: 8px;
+  }
+  /* Enhanced response styling */
+  .response-content h3 {
+    color: var(--accent);
+    margin: 1.5em 0 0.8em 0;
+    font-size: 1.3em;
+    font-weight: 600;
+    border-left: 4px solid var(--accent);
+    padding-left: 12px;
+  }
+  .response-content h4 {
+    color: var(--secondary);
+    margin: 1.2em 0 0.6em 0;
+    font-size: 1.1em;
+    font-weight: 600;
+  }
+  .response-content strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .response-content ul {
+    margin: 0.5em 0 0.5em 2em;
+    padding: 0;
+  }
+  .response-content li {
+    margin: 0.3em 0;
+  }
+  .response-content .highlight {
+    background-color: rgba(230, 126, 34, 0.1);
+    border-left: 3px solid var(--highlight);
+    padding: 0.8em;
+    margin: 1em 0;
+    border-radius: 6px;
+  }
+  .response-content .formula {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-left: 3px solid var(--secondary);
+    padding: 0.8em;
+    margin: 1em 0;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    overflow-x: auto;
+  }
+  .response-content blockquote {
+    border-left: 3px solid var(--muted);
+    margin: 1em 0;
+    padding: 0.5em 1em;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .response-content code {
+    background-color: rgba(51, 65, 85, 0.3);
+    padding: 0.2em 0.4em;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+  }
+</style>
+</head>
+<body>
+  <div class="header-container">
+    <div class="wrap">
+      <div class="header-content">
+        <div class="logo">
+          <span>SBI AI</span>
+        </div>
+        <div class="controls">
+          <div class="lang-dropdown" id="langDropdown">
+            <button class="icon-btn" title="Langue">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
+              </svg>
+            </button>
+            <div class="lang-dropdown-content">
+              <a href="#" data-lang="en">English</a>
+              <a href="#" data-lang="fr">Français</a>
+              <a href="#" data-lang="ar">العربية</a>
+            </div>
+          </div>
+          <button class="icon-btn" id="darkModeToggle" title="Mode sombre">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="main-header">
+      <h1 id="mainTitle">Comment puis-je vous aider ?</h1>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Gauche: Entrée -->
+      <section class="card">
+        <div class="grid">
+          <div class="row">
+            <div>
+              <label id="subjectLabel">Matière</label>
+              <select id="subject" class="subject-select">
+                <option value="Général">Général</option>
+                
+                <option class="subject-category" disabled>────── Sciences humaines et sociales ──────</option>
+                <option value="Philosophie">Philosophie</option>
+                <option value="Histoire">Histoire</option>
+                <option value="Géographie">Géographie</option>
+                <option value="Sociologie">Sociologie</option>
+                <option value="Psychologie">Psychologie</option>
+                <option value="Linguistique">Linguistique</option>
+                <option value="Droit">Droit</option>
+                <option value="Politique">Politique</option>
+                <option value="Économie">Économie</option>
+                <option value="Gestion">Gestion</option>
+                <option value="Relations internationales">Relations internationales</option>
+                <option value="Communication">Communication</option>
+                
+                <option class="subject-category" disabled>────── Sciences exactes et techniques ──────</option>
+                <option value="Mathématiques">Mathématiques</option>
+                <option value="Informatique">Informatique</option>
+                <option value="Physique">Physique</option>
+                <option value="Chimie">Chimie</option>
+                <option value="Statistiques">Statistiques</option>
+                
+                <option class="subject-category" disabled>────── Sciences de la vie et de la santé ──────</option>
+                <option value="Biologie">Biologie</option>
+                <option value="Médecine">Médecine</option>
+                <option value="Pharmacie">Pharmacie</option>
+                <option value="Odontologie">Odontologie</option>
+                <option value="Sciences infirmières">Sciences infirmières</option>
+                
+                <option class="subject-category" disabled>────── Ingénierie et sciences appliquées ──────</option>
+                <option value="Ingénierie">Ingénierie</option>
+                <option value="Architecture">Architecture</option>
+                <option value="Agronomie">Agronomie</option>
+                <option value="Électronique">Électronique</option>
+                <option value="Génie civil">Génie civil</option>
+                <option value="Énergie">Énergie</option>
+                
+                <option class="subject-category" disabled>────── Arts et création ──────</option>
+                <option value="Musique">Musique</option>
+                <option value="Théâtre">Théâtre</option>
+                <option value="Cinéma">Cinéma</option>
+                <option value="Arts plastiques">Arts plastiques</option>
+                <option value="Design">Design</option>
+                <option value="Histoire de l'art">Histoire de l'art</option>
+                
+                <option class="subject-category" disabled>────── Éducation ──────</option>
+                <option value="Sciences de l'éducation">Sciences de l'éducation</option>
+                <option value="Pédagogie">Pédagogie</option>
+                <option value="Formation des enseignants">Formation des enseignants</option>
+              </select>
+            </div>
+            <div>
+              <label id="langResponseLabel">Langue de réponse</label>
+              <select id="lang">
+                <option value="English">English</option>
+                <option value="Français">Français</option>
+                <option value="Arabic">العربية</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label id="questionLabel">Votre question</label>
+            <textarea id="question" placeholder="" style="min-height:100px"></textarea>
+            <div class="footer">
+              <span id="charCount" class="muted">0 caractères</span>
+              <span id="tipText" class="muted">Astuce : soyez précis pour de meilleurs résultats.</span>
+            </div>
+          </div>
+
+          <!-- Champ image et documents -->
+          <div>
+            <label id="fileInputLabel">Fichiers (optionnel)</label>
+            <div class="file-input-container">
+              <label class="file-input-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span>Image</span>
+                <input type="file" id="imageInput" accept="image/*" class="file-input-hidden">
+              </label>
+              <label class="file-input-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>Document</span>
+                <input type="file" id="documentInput" accept=".pdf,.doc,.docx,.txt,.csv" class="file-input-hidden">
+              </label>
+            </div>
+            <div class="tip" id="fileTip">Vous pouvez envoyer une image ou un document avec votre question.</div>
+            <div id="fileList" class="muted" style="margin-top:8px; font-size:12px;"></div>
+          </div>
+
+          <div class="toolbar">
+            <button id="askBtn" class="btn">Poser la question</button>
+            <button id="clearBtn" class="btn ghost">Effacer</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Droite: Réponse -->
+      <section class="card">
+        <label id="responseLabel">Réponse</label>
+        <div id="status" class="muted" style="min-height:18px;margin-bottom:8px;"></div>
+        <div id="output" class="out response-content" style="min-height:220px;border:1px solid var(--ring);border-radius:12px;padding:14px;background:#0b1224;"></div>
+        <div class="response-footer">
+          Fait avec ❤️ SBI.
+        </div>
+        <div class="toolbar right" style="margin-top:10px">
+          <button id="copyBtn" class="pill">Copier</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+  const $ = (id)=>document.getElementById(id);
+  const subjectSel = $('subject');
+  const langSel = $('lang');
+  const qArea = $('question');
+  const out = $('output');
+  const status = $('status');
+  const imageInput = $('imageInput');
+  const documentInput = $('documentInput');
+  const fileList = $('fileList');
+  const langDropdown = $('langDropdown');
+
+  // Text elements to be translated
+  const textElements = {
+    en: {
+      mainTitle: "How can I help you?",
+      subjectLabel: "Subject",
+      langResponseLabel: "Response Language",
+      questionLabel: "Your question",
+      questionPlaceholder: "Example: Solve 2x + 5 = 17, or Explain photosynthesis simply",
+      fileInputLabel: "Files (optional)",
+      fileTip: "You can send an image or document with your question.",
+      fileListLabel: "Selected files:",
+      askBtn: "Ask Question",
+      clearBtn: "Clear",
+      copyBtn: "Copy",
+      downloadBtn: "Download",
+      // Subject categories in English
+      subjectCategories: {
+        "Sciences humaines et sociales": "Humanities and Social Sciences",
+        "Sciences exactes et techniques": "Exact and Technical Sciences",
+        "Sciences de la vie et de la santé": "Life and Health Sciences",
+        "Ingénierie et sciences appliquées": "Engineering and Applied Sciences",
+        "Arts et création": "Arts and Creativity",
+        "Éducation": "Education"
+      },
+      // Individual subjects in English
+      subjects: {
+        "Général": "General",
+        "Philosophie": "Philosophy",
+        "Histoire": "History",
+        "Géographie": "Geography",
+        "Sociologie": "Sociology",
+        "Psychologie": "Psychology",
+        "Linguistique": "Linguistics",
+        "Droit": "Law",
+        "Politique": "Politics",
+        "Économie": "Economics",
+        "Gestion": "Management",
+        "Relations internationales": "International Relations",
+        "Communication": "Communication",
+        "Mathématiques": "Mathematics",
+        "Informatique": "Computer Science",
+        "Physique": "Physics",
+        "Chimie": "Chemistry",
+        "Statistiques": "Statistics",
+        "Biologie": "Biology",
+        "Médecine": "Medicine",
+        "Pharmacie": "Pharmacy",
+        "Odontologie": "Dentistry",
+        "Sciences infirmières": "Nursing Sciences",
+        "Ingénierie": "Engineering",
+        "Architecture": "Architecture",
+        "Agronomie": "Agronomy",
+        "Électronique": "Electronics",
+        "Génie civil": "Civil Engineering",
+        "Énergie": "Energy",
+        "Musique": "Music",
+        "Théâtre": "Theatre",
+        "Cinéma": "Cinema",
+        "Arts plastiques": "Visual Arts",
+        "Design": "Design",
+        "Histoire de l'art": "Art History",
+        "Sciences de l'éducation": "Educational Sciences",
+        "Pédagogie": "Pedagogy",
+        "Formation des enseignants": "Teacher Training"
+      }
+    },
+    fr: {
+      mainTitle: "Comment puis-je vous aider ?",
+      subjectLabel: "Matière",
+      langResponseLabel: "Langue de réponse",
+      questionLabel: "Votre question",
+      questionPlaceholder: "Exemple : Résous 2x + 5 = 17, ou Explique la photosynthèse simplement",
+      fileInputLabel: "Fichiers (optionnel)",
+      fileTip: "Vous pouvez envoyer une image ou un document avec votre question.",
+      fileListLabel: "Fichiers sélectionnés :",
+      askBtn: "Poser la question",
+      clearBtn: "Effacer",
+      copyBtn: "Copier",
+      downloadBtn: "Télécharger",
+      // Subject categories in French
+      subjectCategories: {
+        "Sciences humaines et sociales": "Sciences humaines et sociales",
+        "Sciences exactes et techniques": "Sciences exactes et techniques",
+        "Sciences de la vie et de la santé": "Sciences de la vie et de la santé",
+        "Ingénierie et sciences appliquées": "Ingénierie et sciences appliquées",
+        "Arts et création": "Arts et création",
+        "Éducation": "Éducation"
+      },
+      // Individual subjects in French
+      subjects: {
+        "Général": "Général",
+        "Philosophie": "Philosophie",
+        "Histoire": "Histoire",
+        "Géographie": "Géographie",
+        "Sociologie": "Sociologie",
+        "Psychologie": "Psychologie",
+        "Linguistique": "Linguistique",
+        "Droit": "Droit",
+        "Politique": "Politique",
+        "Économie": "Économie",
+        "Gestion": "Gestion",
+        "Relations internationales": "Relations internationales",
+        "Communication": "Communication",
+        "Mathématiques": "Mathématiques",
+        "Informatique": "Informatique",
+        "Physique": "Physique",
+        "Chimie": "Chimie",
+        "Statistiques": "Statistiques",
+        "Biologie": "Biologie",
+        "Médecine": "Médecine",
+        "Pharmacie": "Pharmacie",
+        "Odontologie": "Odontologie",
+        "Sciences infirmières": "Sciences infirmières",
+        "Ingénierie": "Ingénierie",
+        "Architecture": "Architecture",
+        "Agronomie": "Agronomie",
+        "Électronique": "Électronique",
+        "Génie civil": "Génie civil",
+        "Énergie": "Énergie",
+        "Musique": "Musique",
+        "Théâtre": "Théâtre",
+        "Cinéma": "Cinéma",
+        "Arts plastiques": "Arts plastiques",
+        "Design": "Design",
+        "Histoire de l'art": "Histoire de l'art",
+        "Sciences de l'éducation": "Sciences de l'éducation",
+        "Pédagogie": "Pédagogie",
+        "Formation des enseignants": "Formation des enseignants"
+      }
+    },
+    ar: {
+      mainTitle: "كيف يمكنني مساعدتك؟",
+      subjectLabel: "المادة",
+      langResponseLabel: "لغة الرد",
+      questionLabel: "سؤالك",
+      questionPlaceholder: "مثال: حل 2س + 5 = 17، أو اشرح عملية البناء الضوئي ببساطة",
+      fileInputLabel: "الملفات (اختياري)",
+      fileTip: "يمكنك إرسال صورة أو مستند مع سؤالك.",
+      fileListLabel: "الملفات المختارة:",
+      askBtn: "اطرح السؤال",
+      clearBtn: "مسح",
+      copyBtn: "نسخ",
+      downloadBtn: "تحميل",
+      // Subject categories in Arabic
+      subjectCategories: {
+        "Sciences humaines et sociales": "العلوم الإنسانية والاجتماعية",
+        "Sciences exactes et techniques": "العلوم الدقيقة والتقنية",
+        "Sciences de la vie et de la santé": "علوم الحياة والصحة",
+        "Ingénierie et sciences appliquées": "الهندسة والعلوم التطبيقية",
+        "Arts et création": "الفنون والإبداع",
+        "Éducation": "التعليم"
+      },
+      // Individual subjects in Arabic
+      subjects: {
+        "Général": "عام",
+        "Philosophie": "فلسفة",
+        "Histoire": "تاريخ",
+        "Géographie": "جغرافيا",
+        "Sociologie": "علم اجتماع",
+        "Psychologie": "علم نفس",
+        "Linguistique": "لسانيات",
+        "Droit": "قانون",
+        "Politique": "سياسة",
+        "Économie": "اقتصاد",
+        "Gestion": "إدارة",
+        "Relations internationales": "علاقات دولية",
+        "Communication": "اتصال",
+        "Mathématiques": "رياضيات",
+        "Informatique": "علوم الحاسوب",
+        "Physique": "فيزياء",
+        "Chimie": "كيمياء",
+        "Statistiques": "إحصاء",
+        "Biologie": "أحياء",
+        "Médecine": "طب",
+        "Pharmacie": "صيدلة",
+        "Odontologie": "طب الأسنان",
+        "Sciences infirmières": "علوم التمريض",
+        "Ingénierie": "هندسة",
+        "Architecture": "عمارة",
+        "Agronomie": "زراعة",
+        "Électronique": "إلكترونيات",
+        "Génie civil": "هندسة مدنية",
+        "Énergie": "طاقة",
+        "Musique": "موسيقى",
+        "Théâtre": "مسرح",
+        "Cinéma": "سينما",
+        "Arts plastiques": "فنون تشكيلية",
+        "Design": "تصميم",
+        "Histoire de l'art": "تاريخ الفن",
+        "Sciences de l'éducation": "علوم التربية",
+        "Pédagogie": "علم التربية",
+        "Formation des enseignants": "تكوين المدرسين"
+      }
+    }
+  };
+
+  // Current language
+  let currentLang = 'fr';
+
+  // Function to update text based on language
+  function updateLanguage(lang) {
+    const texts = textElements[lang];
+    if (!texts) return;
+    
+    // Update text content
+    $('mainTitle').textContent = texts.mainTitle;
+    $('subjectLabel').textContent = texts.subjectLabel;
+    $('langResponseLabel').textContent = texts.langResponseLabel;
+    $('questionLabel').textContent = texts.questionLabel;
+    qArea.placeholder = texts.questionPlaceholder;
+    $('fileInputLabel').textContent = texts.fileInputLabel;
+    $('fileTip').textContent = texts.fileTip;
+    $('responseLabel').textContent = texts.responseLabel;
+    $('askBtn').textContent = texts.askBtn;
+    $('clearBtn').textContent = texts.clearBtn;
+    $('copyBtn').textContent = texts.copyBtn;
+    
+    // Update subject dropdown with translated values
+    updateSubjectDropdown(lang);
+    
+    // Update file list if files are selected
+    updateFileList();
+    
+    // Update current language
+    currentLang = lang;
+    
+    // Close dropdown
+    langDropdown.classList.remove('active');
+  }
+
+  // Function to update subject dropdown with translated values
+  function updateSubjectDropdown(lang) {
+    const texts = textElements[lang];
+    const subjectOptions = subjectSel.querySelectorAll('option');
+    
+    // Keep the first option (General/General/Général)
+    subjectOptions[0].textContent = texts.subjects["Général"];
+    subjectOptions[0].value = "Général";
+    
+    let optionIndex = 1;
+    
+    // Update category headers and subjects
+    const categories = [
+      "Sciences humaines et sociales",
+      "Sciences exactes et techniques", 
+      "Sciences de la vie et de la santé",
+      "Ingénierie et sciences appliquées",
+      "Arts et création",
+      "Éducation"
+    ];
+    
+    const subjectsByCategory = {
+      "Sciences humaines et sociales": [
+        "Philosophie", "Histoire", "Géographie", "Sociologie", 
+        "Psychologie", "Linguistique", "Droit", "Politique", 
+        "Économie", "Gestion", "Relations internationales", "Communication"
+      ],
+      "Sciences exactes et techniques": [
+        "Mathématiques", "Informatique", "Physique", "Chimie", "Statistiques"
+      ],
+      "Sciences de la vie et de la santé": [
+        "Biologie", "Médecine", "Pharmacie", "Odontologie", "Sciences infirmières"
+      ],
+      "Ingénierie et sciences appliquées": [
+        "Ingénierie", "Architecture", "Agronomie", "Électronique", "Génie civil", "Énergie"
+      ],
+      "Arts et création": [
+        "Musique", "Théâtre", "Cinéma", "Arts plastiques", "Design", "Histoire de l'art"
+      ],
+      "Éducation": [
+        "Sciences de l'éducation", "Pédagogie", "Formation des enseignants"
+      ]
+    };
+    
+    categories.forEach(category => {
+      // Update category header
+      subjectOptions[optionIndex].textContent = `────── ${texts.subjectCategories[category]} ──────`;
+      subjectOptions[optionIndex].disabled = true;
+      optionIndex++;
+      
+      // Update subjects in this category
+      subjectsByCategory[category].forEach(subject => {
+        subjectOptions[optionIndex].textContent = texts.subjects[subject];
+        subjectOptions[optionIndex].value = subject;
+        optionIndex++;
+      });
+    });
+  }
+
+  const GEMINI_API_KEY = "AIzaSyAGyISSBeftpKpFxy09qTEfIxuDPKoSMsE"; // ⚠️ à remplacer par ta clé
+
+  const updateCount = ()=> $('charCount').textContent = (qArea.value||'').length + ' caractères';
+  qArea.addEventListener('input', updateCount); updateCount();
+
+  $('clearBtn').onclick = ()=>{
+    qArea.value = ''; updateCount(); out.textContent = ''; status.textContent = ''; 
+    imageInput.value = ''; documentInput.value = ''; updateFileList();
+  };
+  
+  $('copyBtn').onclick = async ()=>{
+    const text = out.textContent.trim();
+    if(!text){ toast('Rien à copier'); return; }
+    await navigator.clipboard.writeText(text);
+    toast('Copié !');
+  };
+  
+  function setStatusLoading(msg='Réflexion en cours…'){
+    status.innerHTML = `<span class="spinner"></span> <span style="margin-left:8px">${msg}</span>`;
+  }
+  function setStatus(msg=''){ status.textContent = msg; }
+  function toast(msg){ setStatus(msg); setTimeout(()=>setStatus(''), 1600); }
+
+  async function fileToBase64(file) {
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = ()=> resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function updateFileList() {
+    const files = [];
+    if (imageInput.files.length > 0) {
+      files.push(imageInput.files[0].name);
+    }
+    if (documentInput.files.length > 0) {
+      files.push(documentInput.files[0].name);
+    }
+    
+    if (files.length > 0) {
+      const texts = textElements[currentLang];
+      fileList.innerHTML = `<strong>${texts.fileListLabel}</strong> ${files.join(', ')}`;
+    } else {
+      fileList.innerHTML = '';
+    }
+  }
+
+  // Add event listeners to file inputs
+  imageInput.addEventListener('change', updateFileList);
+  documentInput.addEventListener('change', updateFileList);
+
+  async function askGemini(question, subject, answerLanguage){
+    if(!GEMINI_API_KEY){ throw new Error('Aucune clé API configurée.'); }
+    const model = 'gemini-1.5-flash-latest'; // Correct model name
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+
+    const guidance = [
+      `Tu es un assistant éducatif professionnel et dynamique pour ${subject}.`,
+      `Réponds en ${answerLanguage} avec un style professionnel, clair et engageant.`,
+      `Utilise des titres et sous-titres structurés (h3 pour les titres principaux, h4 pour les sous-titres).`,
+      `Mets en évidence les éléments importants en gras avec la couleur principale.`,
+      `Utilise des listes à puces pour les étapes ou points clés.`,
+      `Pour les maths/sciences, présente les formules dans des blocs de code avec un fond bleu.`,
+      `Ajoute des encadrés en orange pour les points importants ou les conclusions.`,
+      `Utilise un ton pédagogique mais professionnel, comme un expert dans le domaine.`,
+      `Si la question est ambiguë, énonce tes hypothèses. Si elle est dangereuse, refuse poliment.`
+    ].join(' ');
+
+    const userParts = [{ text: `${guidance}\n\nQuestion de l’utilisateur :\n${question}` }];
+
+    // Ajouter l'image si fournie
+    if(imageInput.files.length > 0){
+      const file = imageInput.files[0];
+      const base64 = await fileToBase64(file);
+      userParts.push({
+        inlineData: {
+          mimeType: file.type,
+           base64
+        }
+      });
+    }
+    
+    // Ajouter le document si fourni
+    if(documentInput.files.length > 0){
+      const file = documentInput.files[0];
+      const base64 = await fileToBase64(file);
+      userParts.push({
+        inlineData: {
+          mimeType: file.type,
+          data: base64
+        }
+      });
+    }
+
+    const body = {
+      contents: [{ role: "user", parts: userParts }],
+      generationConfig: {
+        temperature: 0.3,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 2048
+      }
+    };
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if(!res.ok){
+      const text = await res.text();
+      throw new Error(`Erreur API ${res.status}: ${text}`);
+    }
+
+    const data = await res.json();
+    const candidate = data?.candidates?.[0];
+    const parts = candidate?.content?.parts || [];
+    const text = parts.map(p=>p.text).join('\n').trim();
+    return text || 'Aucune réponse reçue.';
+  }
+
+  $('askBtn').onclick = async ()=>{
+    const q = qArea.value.trim();
+    if(!q && !imageInput.files.length && !documentInput.files.length){ 
+      toast('Veuillez écrire une question ou choisir un fichier.'); 
+      return; 
+    }
+
+    out.textContent = '';
+    setStatusLoading();
+
+    try{
+      // Get the display value of the selected subject
+      const selectedSubject = subjectSel.options[subjectSel.selectedIndex].text;
+      const answer = await askGemini(q, selectedSubject, langSel.value);
+      out.innerHTML = answer;
+      setStatus('Terminé.');
+    }catch(err){
+      console.error(err);
+      out.textContent = '';
+      setStatus('' + (err?.message || err));
+    }
+  };
+
+  qArea.addEventListener('keydown', (e)=>{
+    if((e.ctrlKey||e.metaKey) && e.key==='Enter'){ $('askBtn').click(); }
+  });
+
+  // Dark mode toggle functionality
+  const darkModeToggle = $('darkModeToggle');
+  let isDarkMode = true;
+  
+  darkModeToggle.addEventListener('click', () => {
+    if (isDarkMode) {
+      // Switch to light mode
+      document.body.classList.add('light-mode');
+      darkModeToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>`;
+      isDarkMode = false;
+    } else {
+      // Switch to dark mode with white text
+      document.body.classList.remove('light-mode');
+      darkModeToggle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>`;
+      isDarkMode = true;
+    }
+  });
+
+  // Language dropdown functionality
+  const langButton = langDropdown.querySelector('.icon-btn');
+  const langLinks = langDropdown.querySelectorAll('.lang-dropdown-content a');
+  
+  langButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    langDropdown.classList.toggle('active');
+  });
+  
+  langLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const selectedLang = e.target.getAttribute('data-lang');
+      updateLanguage(selectedLang);
+    });
+  });
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!langDropdown.contains(e.target)) {
+      langDropdown.classList.remove('active');
+    }
+  });
+  
+  // Initialize with French
+  updateLanguage('fr');
+</script>
+</body>
+</html>
