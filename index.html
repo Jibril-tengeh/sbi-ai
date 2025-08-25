@@ -531,7 +531,7 @@
         <div id="status" class="muted" style="min-height:18px;margin-bottom:8px;"></div>
         <div id="output" class="out response-content" style="min-height:220px;border-radius:6px;padding:14px;"></div>
         <div class="response-footer">
-          Fait avec ❤️ SBI.
+          Fait avec ⚡SBI
         </div>
         <div class="toolbar right" style="margin-top:10px">
           <button id="copyBtn" class="pill">Copier</button>
@@ -890,30 +890,30 @@
 
     // Enhanced guidance for problem solving
     const guidance = [
-      `Tu es un assistant éducatif expert spécialisé dans la résolution automatique de problèmes pour ${subject}.`,
-      `Réponds en ${answerLanguage} avec un style professionnel et pédagogique.`,
-      `MISSION PRINCIPALE: Analyser les fichiers fournis et résoudre AUTOMATIQUEMENT tous les problèmes, exercices ou questions identifiés.`,
-      `ÉTAPES À SUIVRE:`,
-      `1. **IDENTIFICATION**: Examine attentivement chaque fichier et identifie tous les problèmes, exercices, questions ou défis présents.`,
-      `2. **CLASSIFICATION**: Détermine le type de problème (mathématique, physique, chimie, littéraire, etc.) et son niveau de difficulté.`,
-      `3. **RÉSOLUTION COMPLÈTE**: Résous chaque problème étape par étape avec des explications détaillées.`,
-      `4. **VÉRIFICATION**: Vérifie tes réponses et propose des méthodes alternatives si pertinent.`,
-      problemType !== 'auto' ? `Focus spécifiquement sur les problèmes de type: ${problemType}` : '',
-      `STRUCTURE DE RÉPONSE:`,
-      `### 🔍 Analyse des fichiers`,
-      `### 📋 Problèmes identifiés`,
-      `### ✅ Solutions détaillées (pour chaque problème)`,
-      `### 🎯 Résumé et vérifications`,
-      `Utilise des titres clairs (h3), mets en évidence les étapes importantes, utilise des listes à puces pour les étapes.`,
-      `Pour les maths/sciences: présente les formules dans des blocs de code avec fond coloré.`,
-      `Sois exhaustif: ne laisse aucun problème sans solution complète.`
+      `You are an expert educational assistant specializing in automated problem solving for ${subject}.`,
+      `Respond in ${answerLanguage} with a professional and pedagogical tone.`,
+      `MAIN MISSION: Analyze the provided files and AUTOMATICALLY solve all identified problems, exercises, or questions.`,
+      `STEPS TO FOLLOW:`,
+      `1. **IDENTIFICATION**: Carefully examine each file and identify all problems, exercises, questions, or challenges present.`,
+      `2. **CLASSIFICATION**: Determine the type of problem (mathematical, physical, chemical, literary, etc.) and its difficulty level.`,
+      `3. **COMPLETE RESOLUTION**: Solve each problem step by step with detailed explanations.`,
+      `4. **VERIFICATION**: Verify your answers and suggest alternative methods if relevant.`,
+      problemType !== 'auto' ? `Focus specifically on problems of the type: ${problemType}` : '',
+      `RESPONSE STRUCTURE:`,
+      `### 🔍 File Analysis`,
+      `### 📋 Identified Problems`,
+      `### ✅ Detailed Solutions (for each problem)`,
+      `### 🎯 Summary and Verifications`,
+      `Use clear headings (h3), highlight important steps, and use bullet points for steps.`,
+      `For math/science: present formulas in code blocks with a colored background.`,
+      `Be exhaustive: leave no problem without a complete solution.`
     ].join(' ');
 
     let promptText = guidance;
     if (question && question.trim()) {
-      promptText += `\n\nInstructions supplémentaires de l'utilisateur: ${question}`;
+      promptText += `\n\nAdditional user instructions: ${question}`;
     } else {
-      promptText += `\n\nAucune instruction spécifique - effectue une analyse et résolution complète automatique.`;
+      promptText += `\n\nNo specific instructions - perform a complete automatic analysis and resolution.`;
     }
 
     const userParts = [{ text: promptText }];
@@ -981,10 +981,11 @@
 
     try{
       const selectedSubject = subjectSel.options[subjectSel.selectedIndex].text;
+      const answerLanguage = langSel.value; // Get the selected response language
       const answer = await askGemini(
         qArea.value.trim(), 
         selectedSubject, 
-        langSel.value, 
+        answerLanguage, // Pass the language to the function
         selectedFiles,
         selectedProblemType
       );
